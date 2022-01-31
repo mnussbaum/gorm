@@ -576,3 +576,35 @@ func TestHasManySameForeignKey(t *testing.T) {
 		References: []Reference{{"ID", "User", "UserRefer", "Profile", "", true}},
 	})
 }
+
+type AnotherModel struct {
+	gorm.Model
+}
+
+type ModelWithSchemaQualifiedLongTableName struct {
+	gorm.Model
+	AnotherModel   AnotherModel
+	AnotherModelID uint
+}
+
+func (ModelWithSchemaQualifiedLongTableName) TableName() string {
+	return "my_schema.a_very_very_very_very_very_very_very_very_long_table_name"
+}
+
+func TestParseConstraintNameWithSchemaQualifiedLongTableName(t *testing.T) {
+
+	s, err := schema.Parse(
+		&ModelWithSchemaQualifiedLongTableName{},
+		&sync.Map{},
+		schema.NamingStrategy{},
+	)
+	if err != nil {
+		t.Fatalf("Failed to parse schema")
+	}
+
+	constraint := s.Relationships.Relations["AnotherModel"].ParseConstraint()
+
+	if constraint.Name != "fkmy_schema_a_very_very_very_very_very_very_very_very_lo09264173" {
+		t.Fatal(constraint.Name)
+	}
+}

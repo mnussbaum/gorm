@@ -72,7 +72,11 @@ func (ns NamingStrategy) JoinTableName(str string) string {
 
 // RelationshipFKName generate fk name for relation
 func (ns NamingStrategy) RelationshipFKName(rel Relationship) string {
-	return ns.formatName("fk", rel.Schema.Table, ns.toDBName(rel.Name))
+	return ns.formatName(
+		"fk",
+		strings.Replace(rel.Schema.Table, ".", "_", -1),
+		ns.toDBName(rel.Name),
+	)
 }
 
 // CheckerName generate checker name
